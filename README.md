@@ -1,4 +1,4 @@
-FTN E2 – Projekat iz Raèunarske grafike (Bioskop 2025)
+FTN E2 â€“ Projekat iz Racunarske grafike (Bioskop 2025)
 
-Autor: Sara Ponjeviæ
+Autor: Sara Ponjevic
 Tema: 2D simulacija bioskopske sale u OpenGL-u
