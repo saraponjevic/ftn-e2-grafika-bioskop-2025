@@ -1,0 +1,35 @@
+# Visual Studio build folders
+Debug/
+Release/
+x64/
+ipch/
+*.obj
+*.pdb
+*.ilk
+*.idb
+
+# VS user files
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+
+# Backup and cache
+*.log
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Visual Studio cache
+.vs/
+
