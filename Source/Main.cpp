@@ -58,6 +58,7 @@ int screenWidth = 800, screenHeight = 800;
 bool keyWasDown[GLFW_KEY_LAST + 1] = { false };
 
 
+// klik na sediste
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
@@ -99,7 +100,7 @@ int main()
 
 
     glewInit();
-    glEnable(GL_BLEND);
+    glEnable(GL_BLEND);  // da bi se postovala prozirnost
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     updateViewport(screenWidth, screenHeight);
@@ -113,8 +114,8 @@ int main()
     texShader = createShader("Shaders/tex.vert", "Shaders/tex.frag");
 
    
-   unsigned int VBO1, VBO2;
-   createRectVAO(rectVAO, VBO1);
+   unsigned int VBO1, VBO2;   
+   createRectVAO(rectVAO, VBO1);  
    createTexturedQuadVAO(quadVAO, VBO2);
 
 
@@ -154,7 +155,7 @@ int main()
             spawnPeopleForProjection();
         }
 
-
+        // kupovina karata
         for (int key = GLFW_KEY_1; key <= GLFW_KEY_9; key++) {
             int state = glfwGetKey(window, key);
             if (state == GLFW_PRESS && !keyWasDown[key]) {
@@ -175,12 +176,12 @@ int main()
         bool allSeated = areAllSeated();
         bool allExited = areAllExited();
 
-        if (allSeated && doorOffset >= 0.15f) {
+        if (allSeated && doorOffset >= 0.15f) {  //pocni da zatvaras
             doorClosing = true;
             doorOpening = false;
         }
 
-        if (allSeated && doorOffset <= 0.0f && !filmStarted && !filmFinished) {
+        if (allSeated && doorOffset <= 0.0f && !filmStarted && !filmFinished) {  //pusti film
             filmStarted = true;
             filmFinished = false;
             filmStartTime = start;
@@ -188,7 +189,7 @@ int main()
             screenColor = Color{ 1.0f, 1.0f, 1.0f, 1.0f };
         }
 
-        if (allExited) {
+        if (allExited) {  // kad svi izadju- reset
             resetScene();
 
             doorOpening = false;
@@ -228,12 +229,12 @@ int main()
 
 
         drawRect(rectShader, rectVAO, 0.0f, 0.0f, 2.0f, 2.0f,
-            { 0.1f, 0.1f, 0.1f, overlayAlpha });
+            { 0.1f, 0.1f, 0.1f, overlayAlpha }); 
 
 
         drawTexturedQuad(texShader, quadVAO, nameTex,
             -0.87f, -0.87f,   
-            0.3f, 0.3f);    
+            0.3f, 0.3f);    // me.png
 
 
         glfwSwapBuffers(window);

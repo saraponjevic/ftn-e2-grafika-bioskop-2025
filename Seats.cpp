@@ -13,6 +13,7 @@ const float SEAT_W = 0.17f;
 const float SEAT_H = 0.17f;  
 
 
+
 float seatScaleForRow(int row)
 {
     switch (row) {
@@ -27,6 +28,7 @@ float seatScaleForRow(int row)
 }
 
 
+// pravljenje sedista - njihove x i y pozicije + velicina + pocetni status
 void initSeats()
 {
     seats.clear();
@@ -63,6 +65,7 @@ void initSeats()
 }
 
 
+// klik na sedista
 void handleSeatClick(float ndcX, float ndcY)
 {
     for (int i = 0; i < (int)seats.size(); i++)
@@ -88,10 +91,12 @@ void handleSeatClick(float ndcX, float ndcY)
     }
 }
 
-
+// kupovina karata 
 void buySeats(int N)
 {
-    for (int r = NUM_ROWS - 1; r >= 0; r--)
+   // for (int r = NUM_ROWS - 1; r >= 0; r--)
+    for (int r = 0; r < NUM_ROWS; r++)
+
     {
         int count = 0;
         int startCol = -1;
