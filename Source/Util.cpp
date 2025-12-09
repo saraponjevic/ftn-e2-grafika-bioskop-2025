@@ -291,7 +291,7 @@ void drawRect(unsigned int shader, unsigned int VAO,
     glUniform2f(glGetUniformLocation(shader, "uScale"), sx, sy);
     glUniform4f(glGetUniformLocation(shader, "uColor"), col.r, col.g, col.b, col.a);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO);  
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 

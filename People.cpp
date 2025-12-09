@@ -10,58 +10,59 @@
 #include <GLFW/glfw3.h>
 
 
-std::vector<Person> people;
+std::vector<Person> people;  
 
 float DOOR_CENTER_X = -0.92f;
 float DOOR_CENTER_Y = 0.55f;
 const float PERSON_SIZE = 0.10f;
 
 
+// ljudi sedaju na mesta
 void spawnPeopleForProjection()
 {
-    std::vector<int> allowed;
+    std::vector<int> allowed;  
     for (int i = 0; i < (int)seats.size(); i++) {
         if (seats[i].status == SeatStatus::Reserved ||
             seats[i].status == SeatStatus::Bought) {
-            allowed.push_back(i);
+            allowed.push_back(i);   
         }
     }
 
-    if (allowed.empty()) {
+    if (allowed.empty()) {   
         projectionStarted = false;
         doorOpening = false;
-        people.clear();
+        people.clear();  
         return;
     }
 
     projectionStarted = true;
     doorOpening = true;
 
-    people.clear();
+    people.clear();  
 
-    int maxPeople = (int)allowed.size();
+    int maxPeople = (int)allowed.size();  
     int numPeople = rand() % maxPeople + 1;  
 
-    people.reserve(numPeople);
+    people.reserve(numPeople); 
 
     double now = glfwGetTime();
     const double PERSON_DELAY = 0.5;
 
     for (int i = 0; i < numPeople; i++)
     {
-        int randPos = rand() % allowed.size();
-        int seatIndex = allowed[randPos];
-        allowed.erase(allowed.begin() + randPos);
+        int randPos = rand() % allowed.size();  
+        int seatIndex = allowed[randPos];  
+        allowed.erase(allowed.begin() + randPos);  
 
         Person p;
         p.x = DOOR_CENTER_X;
         p.y = 1.5f;             
-        p.targetX = seats[seatIndex].x;
+        p.targetX = seats[seatIndex].x;  
         p.targetY = seats[seatIndex].y;
-        p.seatIndex = seatIndex;
-        p.stage = 0;
+        p.seatIndex = seatIndex; 
+        p.stage = 0; 
         p.started = false;
-        p.startTime = now + i * PERSON_DELAY;
+        p.startTime = now + i * PERSON_DELAY;   
 
         people.push_back(p);
     }
@@ -69,7 +70,7 @@ void spawnPeopleForProjection()
 
 
 
-
+// kretanje ljudi u bioskopu
 void updatePeople(double now)
 {
     float speed = 0.005f;
@@ -89,6 +90,7 @@ void updatePeople(double now)
             }
         }
 
+        // kretanje po y do reda sedista
         if (p.stage == 0)
         {
             if (fabs(p.y - p.targetY) > 0.01f)
@@ -98,6 +100,7 @@ void updatePeople(double now)
             else p.stage = 1;
         }
 
+        // kretanje po x do tacnog sedista
         else if (p.stage == 1)
         {
             if (fabs(p.x - p.targetX) > 0.01f)
@@ -107,6 +110,7 @@ void updatePeople(double now)
             else p.stage = 2; // sedi
         }
 
+        // kretanje po x od sedista ka vratima
         else if (p.stage == 3)
         {
             if (fabs(p.x - DOOR_CENTER_X) > 0.01f)
@@ -116,6 +120,7 @@ void updatePeople(double now)
             else p.stage = 4;
         }
 
+        // kretanje po y od vrata ka izlazu
         else if (p.stage == 4)
         {
             float exitY = DOOR_CENTER_Y - 0.15f;
@@ -124,12 +129,13 @@ void updatePeople(double now)
             {
                 p.y += (p.y < exitY ? speed : -speed);
             }
-            else p.stage = 5; // završio izlazak
+            else p.stage = 5; // zavrsio izlazak
         }
     }
 }
 
 
+// crtanje ljudi koji se krecu
 void drawWalkingPeople()
 {
     extern unsigned int quadVAO;
@@ -189,7 +195,7 @@ void drawSeatedPeople()
     }
 }
 
-
+// da li su svi ljudi seli na svoja sedista
 bool areAllSeated()
 {
     if (people.empty()) return false;
@@ -202,6 +208,7 @@ bool areAllSeated()
 }
 
 
+// da li su svi ljudi zavrsili izlazak iz sale
 extern bool peopleLeaving;
 
 bool areAllExited() {
