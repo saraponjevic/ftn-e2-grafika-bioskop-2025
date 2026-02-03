@@ -1,14 +1,15 @@
 #version 330 core
-in vec2 chTex;
-out vec4 outCol;
-uniform sampler2D uTex;
+
+in vec2 chTex;  // (u, v)
+out vec4 outCol;   
+uniform sampler2D uTex;  
 
 void main()
 {
-    vec4 texColor = texture(uTex, chTex);
+    vec4 texColor = texture(uTex, chTex);  
 
-    if (texColor.a < 0.1)
-        discard;
+    if (texColor.a < 0.1)   
+        discard;   
 
     outCol = texColor;
 }

@@ -32,16 +32,16 @@ extern const float SEAT_H;
 float overlayAlpha = 0.5f;
 bool projectionStarted = false;
 
-float doorOffset = 0.0f;
+float doorOffset = 0.0f;  //koliko su vrata otvorena
 bool doorOpening = false;
 bool doorClosing = false;
 
 bool filmStarted = false;
 bool filmFinished = false;
 double filmStartTime = 0.0;
-int filmFrameCount = 0;
+int filmFrameCount = 0;  //broj frejmova tokom filma
 
-Color screenColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+Color screenColor = { 1.0f, 1.0f, 1.0f, 1.0f };  //belo
 bool peopleLeaving = false;
 
 bool resetAfterDoorClose = false;
@@ -53,19 +53,19 @@ unsigned int rectVAO, quadVAO;
 unsigned int texWalkForward, texWalkLeft, texWalkRight, texStand;
 unsigned int seatFreeTex, seatReservedTex, seatBoughtTex;
 
-int screenWidth = 800, screenHeight = 800;
+int screenWidth = 800, screenHeight = 800;  //pocetne vrednosti
 
-bool keyWasDown[GLFW_KEY_LAST + 1] = { false };
+bool keyWasDown[GLFW_KEY_LAST + 1] = { false };  //vec pritisnuto
 
 
 // klik na sediste
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        glfwGetCursorPos(window, &xpos, &ypos);  //(xpos, ypos) u pikselima
 
         float ndcX = (xpos / screenWidth) * 2.0f - 1.0f;
-        float ndcY = -((ypos / screenHeight) * 2.0f - 1.0f);
+        float ndcY = -((ypos / screenHeight) * 2.0f - 1.0f);  //OpenGL od dna
 
         handleSeatClick(ndcX, ndcY);
     }
@@ -82,19 +82,19 @@ int main()
 
 
     GLFWmonitor* mon = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(mon);
-    screenWidth = mode->width;
+    const GLFWvidmode* mode = glfwGetVideoMode(mon);  //truktura sa rezolucijom
+    screenWidth = mode->width;  
     screenHeight = mode->height;
-
+    
 
 
     GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "Bioskop", mon, nullptr);
     if (window == NULL) return endProgram("Prozor nije uspeo da se kreira.");
     glfwMakeContextCurrent(window);
-    //gWindow = window;
+    
 
 
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);  
     if (glewInit() != GLEW_OK) return endProgram("GLEW nije uspeo da se inicijalizuje.");
 
 
@@ -121,8 +121,9 @@ int main()
 
 
     unsigned int nameTex = loadImageToTexture("res/me.png");
-    glUseProgram(texShader);
-    glUniform1i(glGetUniformLocation(texShader, "uTex"), 0);
+    glUseProgram(texShader);   //(tex.vert + tex.frag)
+    glUniform1i(glGetUniformLocation(texShader, "uTex"), 0);  //uTex koristi texture unit 0”.
+    
 
     seatFreeTex = loadImageToTexture("res/plava.png");
     seatReservedTex = loadImageToTexture("res/zuta.png");
@@ -159,11 +160,11 @@ int main()
         for (int key = GLFW_KEY_1; key <= GLFW_KEY_9; key++) {
             int state = glfwGetKey(window, key);
             if (state == GLFW_PRESS && !keyWasDown[key]) {
-                buySeats(key - GLFW_KEY_0);
+                buySeats(key - GLFW_KEY_0);   //u cifru (1–9)
                 keyWasDown[key] = true;
-            }
+            }               
             else if (state == GLFW_RELEASE) {
-                keyWasDown[key] = false;
+                keyWasDown[key] = false;   
             }
         }
 
@@ -195,18 +196,19 @@ int main()
             doorOpening = false;
             doorClosing = true;    
 
-            people.clear();
+            people.clear();  //brisanje ljudi
             initSeats();            
         }
 
 
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);  
 
         drawScreenAndDoor();
         drawWalkingPeople();
        // drawSeatedPeople();   
 
+        //crtanje sedista
         for (int i = 0; i < seats.size(); i++) {
             const Seat& s = seats[i];
             int row = i / NUM_COLS;
@@ -240,10 +242,10 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        double dt = glfwGetTime() - start;
+        double dt = glfwGetTime() - start;   //koliko je trajao frejm
         if (dt < FRAME_TIME) {
-            std::this_thread::sleep_for(std::chrono::duration<double>(FRAME_TIME - dt));
-        }
+            std::this_thread::sleep_for(std::chrono::duration<double>(FRAME_TIME - dt));  //da bi se uskladilo
+        }       
     }
 
     glfwTerminate();

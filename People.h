@@ -4,12 +4,12 @@
 #include "Util.h"   
 
 struct Person {
-    float x, y;
-    float targetX, targetY;
+    float x, y;  //poz osobe
+    float targetX, targetY;  //ciljna poz
     int stage;
     int seatIndex;
-    double startTime;
-    bool started;
+    double startTime;  //vreme kada treba da osoba krene
+    bool started;  //da li je osoba veæ krenula da se kreæe
 };
 
 extern std::vector<Person> people;

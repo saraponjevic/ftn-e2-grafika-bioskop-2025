@@ -55,6 +55,8 @@ void createTexturedQuadVAO(unsigned int& VAO, unsigned int& VBO)
         -0.5f, -0.5f, 0.0f, 0.0f,
          0.5f, -0.5f, 1.0f, 0.0f,
          0.5f,  0.5f, 1.0f, 1.0f
+
+        
     };
 
     glGenVertexArrays(1, &VAO);
@@ -64,7 +66,7 @@ void createTexturedQuadVAO(unsigned int& VAO, unsigned int& VBO)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);  
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
@@ -209,6 +211,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
     int TextureHeight;
     int TextureChannels;
 
+    // ImageData - pointer na piksele slike
     unsigned char* ImageData = stbi_load(filePath, &TextureWidth, &TextureHeight, &TextureChannels, 0);
     if (!ImageData) {
         std::cout << "Kursor nije ucitan! Putanja kursora: " << filePath << std::endl;
@@ -236,6 +239,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
             return nullptr;
         }
 
+        // za svaki piksel u smanjenoj slici racunamo koji piksel originalne slike odgovara
         for (int y = 0; y < outH; ++y) {
             for (int x = 0; x < outW; ++x) {
                 int srcX = x * TextureWidth / outW;
@@ -255,6 +259,8 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
         image.height = outH;
         image.pixels = resized;
 
+        // centar kursora
+        // Tacka na površini slike kursora koja se ponaša kao hitboks, moze se menjati po potrebi
         int hotspotX = outW / 5;
         int hotspotY = outH / 5;
 
@@ -264,6 +270,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
         stbi_image_free(ImageData);
     }
     else {
+        //ako slika nije prevelika koristimo je direktno
         GLFWimage image;
         image.width = TextureWidth;
         image.height = TextureHeight;
@@ -291,23 +298,25 @@ void drawRect(unsigned int shader, unsigned int VAO,
     glUniform2f(glGetUniformLocation(shader, "uScale"), sx, sy);
     glUniform4f(glGetUniformLocation(shader, "uColor"), col.r, col.g, col.b, col.a);
 
-    glBindVertexArray(VAO);  
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(VAO);    
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); 
 }
+
+
 
 void drawTexturedQuad(unsigned int shader, unsigned int VAO,
     unsigned int texture,
-    float cx, float cy, float sx, float sy)
+    float cx, float cy, float sx, float sy)   
 {
     glUseProgram(shader);
     glUniform2f(glGetUniformLocation(shader, "uPos"), cx, cy);
     glUniform2f(glGetUniformLocation(shader, "uScale"), sx, sy);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glActiveTexture(GL_TEXTURE0);  
+    glBindTexture(GL_TEXTURE_2D, texture); 
 
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);  
 }
 
 /*GLFWcursor* loadImageToCursor(const char* filePath) {

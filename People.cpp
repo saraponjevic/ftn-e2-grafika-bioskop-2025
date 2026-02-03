@@ -12,15 +12,15 @@
 
 std::vector<Person> people;  
 
-float DOOR_CENTER_X = -0.92f;
-float DOOR_CENTER_Y = 0.55f;
+float DOOR_CENTER_X = -0.92f;   //X koordinatu centra vrata - levo
+float DOOR_CENTER_Y = 0.55f;  // gore
 const float PERSON_SIZE = 0.10f;
 
 
 // ljudi sedaju na mesta
 void spawnPeopleForProjection()
 {
-    std::vector<int> allowed;  
+    std::vector<int> allowed;   
     for (int i = 0; i < (int)seats.size(); i++) {
         if (seats[i].status == SeatStatus::Reserved ||
             seats[i].status == SeatStatus::Bought) {
@@ -31,7 +31,7 @@ void spawnPeopleForProjection()
     if (allowed.empty()) {   
         projectionStarted = false;
         doorOpening = false;
-        people.clear();  
+        people.clear();  //obrisati staro
         return;
     }
 
@@ -45,22 +45,22 @@ void spawnPeopleForProjection()
 
     people.reserve(numPeople); 
 
-    double now = glfwGetTime();
+    double now = glfwGetTime();  //od starta programa
     const double PERSON_DELAY = 0.5;
 
     for (int i = 0; i < numPeople; i++)
     {
-        int randPos = rand() % allowed.size();  
-        int seatIndex = allowed[randPos];  
-        allowed.erase(allowed.begin() + randPos);  
+        int randPos = rand() % allowed.size();   //nasumičan indeks
+        int seatIndex = allowed[randPos];     
+        allowed.erase(allowed.begin() + randPos);   //ne mogu dve osobe na 1 sediste
 
         Person p;
-        p.x = DOOR_CENTER_X;
-        p.y = 1.5f;             
+        p.x = DOOR_CENTER_X;  
+        p.y = 1.5f;      //iznad scene pa silazi         
         p.targetX = seats[seatIndex].x;  
         p.targetY = seats[seatIndex].y;
-        p.seatIndex = seatIndex; 
-        p.stage = 0; 
+        p.seatIndex = seatIndex;
+        p.stage = 0; //prva faza ulaska
         p.started = false;
         p.startTime = now + i * PERSON_DELAY;   
 
@@ -73,7 +73,7 @@ void spawnPeopleForProjection()
 // kretanje ljudi u bioskopu
 void updatePeople(double now)
 {
-    float speed = 0.005f;
+    float speed = 0.005f;  // korak pomeranja
 
     for (auto& p : people)
     {
@@ -82,9 +82,9 @@ void updatePeople(double now)
             if (now < p.startTime)
                 continue;
 
-            p.started = true;
+            p.started = true;  //osoba je krenula
 
-            if (!peopleLeaving) {
+            if (!peopleLeaving) {   // pozicioniranje ispred vrata
                 p.x = DOOR_CENTER_X;
                 p.y = DOOR_CENTER_Y - 0.15f;
             }
@@ -93,11 +93,13 @@ void updatePeople(double now)
         // kretanje po y do reda sedista
         if (p.stage == 0)
         {
-            if (fabs(p.y - p.targetY) > 0.01f)
+            if (fabs(p.y - p.targetY) > 0.01f)   
             {
                 p.y += (p.y < p.targetY ? speed : -speed);
+                //ko je ispod cilja - p.y += speed
+                //ako je iznad cilja - p.y -= speed
             }
-            else p.stage = 1;
+            else p.stage = 1; 
         }
 
         // kretanje po x do tacnog sedista
@@ -123,7 +125,7 @@ void updatePeople(double now)
         // kretanje po y od vrata ka izlazu
         else if (p.stage == 4)
         {
-            float exitY = DOOR_CENTER_Y - 0.15f;
+            float exitY = DOOR_CENTER_Y - 0.15f;  //Y koordinata linije izlaza (ispod vrata)
 
             if (fabs(p.y - exitY) > 0.01f)
             {
@@ -144,7 +146,7 @@ void drawWalkingPeople()
     for (auto& p : people)
     {
         if (!p.started) continue;
-        if (p.stage == 2 || p.stage == 5) continue;
+        if (p.stage == 2 || p.stage == 5) continue;  
 
         unsigned int tex;
 
@@ -152,14 +154,14 @@ void drawWalkingPeople()
             tex = texWalkForward;
         else
         {
-            float targetX = (p.stage == 1 ? p.targetX : DOOR_CENTER_X);
+            float targetX = (p.stage == 1 ? p.targetX : DOOR_CENTER_X);  
             tex = (p.x < targetX ? texWalkRight : texWalkLeft);
         }
 
         drawTexturedQuad(
             texShader, quadVAO, tex,
-            p.x, p.y,
-            PERSON_SIZE, PERSON_SIZE
+            p.x, p.y,   //trenutna poz osobe
+            PERSON_SIZE, PERSON_SIZE   
         );
     }
 }
@@ -174,22 +176,22 @@ void drawSeatedPeople()
     {
         if (p.stage != 2) continue;
 
-        const Seat& s = seats[p.seatIndex];
+        const Seat& s = seats[p.seatIndex];  //index sedišta u vektoru seats na kome ta osoba sedi
         //float seatScale = seatScaleForRow(p.seatIndex / 14);
 
-        int row = p.seatIndex / NUM_COLS;
+        int row = p.seatIndex / NUM_COLS;  //daje red u kom je sedište
         float seatScale = seatScaleForRow(row);
 
 
-        float seatH = SEAT_H * seatScale;
-        float seatTopY = s.y + seatH * 0.5f;
+        float seatH = SEAT_H * seatScale;  
+        float seatTopY = s.y + seatH * 0.5f;  //Y koordinata vrha sedišta
 
-        float drawX = s.x;
-        float drawY = seatTopY + PERSON_SIZE * (-0.09f);
+        float drawX = s.x;   //(sedi na tom sedištu)
+        float drawY = seatTopY + PERSON_SIZE * (-0.09f);  // da nije iznad sedista
 
         drawTexturedQuad(
             texShader, quadVAO, texStand,
-            drawX, drawY,
+            drawX, drawY,   //ka koji sedi
             PERSON_SIZE, PERSON_SIZE
         );
     }
@@ -198,7 +200,7 @@ void drawSeatedPeople()
 // da li su svi ljudi seli na svoja sedista
 bool areAllSeated()
 {
-    if (people.empty()) return false;
+    if (people.empty()) return false;  //Ako liste ljudi nema (niko nije ušao u salu)
 
     for (auto& p : people)
         if (p.stage != 2)
@@ -214,7 +216,7 @@ extern bool peopleLeaving;
 bool areAllExited() {
     if (!peopleLeaving || people.empty()) return false;
     for (auto& p : people)
-        if (p.stage != 5) return false;
+        if (p.stage != 5) return false;  //stanje 5 -osoba je završila izlazak iz sale
     return true;
 }
 
