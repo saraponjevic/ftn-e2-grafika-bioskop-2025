@@ -20,31 +20,31 @@ void resetScene()
 
     filmStarted = false; 
     filmFinished = false; 
-    filmFrameCount = 0;
+    filmFrameCount = 0;  
 
     screenColor = Color{ 1.0f, 1.0f, 1.0f, 1.0f };  
 
-    peopleLeaving = false; 
+    peopleLeaving = false; //da li ljudi napustaju salu
 }
 
 
 // tamnosivi pravougaonik preko ekrana + otvaranje i zatvaranje vrata -klizna vrata
-void updateOverlayAndDoors(double now)
+void updateOverlayAndDoorss(double now)
 {
     
    
     if (projectionStarted && overlayAlpha > 0.0f)  
     {
-        overlayAlpha -= 0.01f;
+        overlayAlpha -= 0.01f;  //sve providniji
         if (overlayAlpha < 0.0f) overlayAlpha = 0.0f;
     }  
 
 
-    
+    //pocni da otvaras vrata
     if (doorOpening && doorOffset < 0.15f)
     {
         doorOffset += 0.002f;  
-        if (doorOffset > 0.15f) doorOffset = 0.15f;
+        if (doorOffset > 0.15f) doorOffset = 0.15f;  // ne preko max otvaranja
     }
 
 
@@ -61,7 +61,9 @@ void updateOverlayAndDoors(double now)
 }
 
 
-// boje platna + kad je kraj filma izlazak ljudi i platno opet belo
+// boje platna + kad je kraj filma izlazak ljudi i platno opet belož
+
+/*
 void updateFilm(double now)
 {
     if (!filmStarted || filmFinished)
@@ -69,7 +71,7 @@ void updateFilm(double now)
 
     double elapsed = now - filmStartTime;  
 
-    if (elapsed >= 20.0)
+    if (elapsed >= 20.0) // gotov film
     {
         filmFinished = true;
         filmStarted = false;
@@ -81,13 +83,13 @@ void updateFilm(double now)
 
         double nowExit = now;  
         const double EXIT_DELAY = 0.5; 
-        int exitIndex = 0;  
+        int exitIndex = 0;   //koliko ljudi je vec krenulo
 
-        for (int i = (int)people.size() - 1; i >= 0; --i) {   
-            auto& p = people[i];  
+        for (int i = (int)people.size() - 1; i >= 0; --i) {   //od posl 
+            auto& p = people[i];   
             if (p.stage == 2) {   
                 p.stage = 3;     
-                p.started = false;  
+                p.started = false;   //nova animacija 
                 p.startTime = nowExit + exitIndex * EXIT_DELAY; 
                 exitIndex++;
             }
@@ -96,7 +98,7 @@ void updateFilm(double now)
         return;  
     }
 
-    
+    //menjanje boje na svakih 20 frejmova
     if (filmFrameCount % 20 == 0)
     {
         float r = (rand() % 256) / 255.0f;  
@@ -106,7 +108,7 @@ void updateFilm(double now)
         screenColor = Color{ r, g, b, 1.0f };  
     }
     filmFrameCount++;
-}
+}*/
 
 
 // rect.frag i rect.vert
@@ -114,30 +116,30 @@ void drawScreenAndDoor()
     {
         float screenY = 0.70f;  
 
-        drawRect(rectShader, rectVAO,
+        drawRect(rectShader, rectVAO,  //sivi pravougaonik oko platna
             0.0f, screenY,
             1.0f, 0.60f,
             { 0.55f, 0.55f, 0.55f, 1.0f });  
 
-        drawRect(rectShader, rectVAO,
+        drawRect(rectShader, rectVAO,  //platno -boja se menja tokom filma
             0.0f, screenY,
             0.90f, 0.50f,
             screenColor);
 
         
-        drawRect(rectShader, rectVAO,
+        drawRect(rectShader, rectVAO,   //okvir vrata sivi
             DOOR_CENTER_X, DOOR_CENTER_Y + 0.02f,
             0.18f, 0.40f,
             { 0.05f, 0.05f, 0.05f, 1.0f });
 
         
-        drawRect(rectShader, rectVAO,
+        drawRect(rectShader, rectVAO,    //pokretno krilo vrata
             DOOR_CENTER_X - doorOffset, DOOR_CENTER_Y,
             0.12f, 0.30f,
             { 0.15f, 0.35f, 0.18f, 1.0f });
 
        
-        drawRect(rectShader, rectVAO,
+        drawRect(rectShader, rectVAO,   //kvaka
             (DOOR_CENTER_X + 0.045f) - doorOffset, DOOR_CENTER_Y,
             0.012f, 0.012f,
             { 1.0f, 0.9f, 0.3f, 1.0f });

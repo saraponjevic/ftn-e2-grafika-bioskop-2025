@@ -103,6 +103,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Header</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,21 +127,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Cinema.cpp" />
+    <ClCompile Include="ModelSimple.cpp" />
     <ClCompile Include="People.cpp" />
+    <ClCompile Include="People3D.cpp" />
+    <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Seat3D.cpp" />
     <ClCompile Include="Seats.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Util.cpp" />
+    <ClCompile Include="stb_image_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cinema.h" />
     <ClInclude Include="Header\stb_image.h" />
     <ClInclude Include="Header\Util.h" />
+    <ClInclude Include="ModelSimple.h" />
     <ClInclude Include="People.h" />
+    <ClInclude Include="People3D.h" />
+    <ClInclude Include="Room.h" />
+    <ClInclude Include="Seat3D.h" />
     <ClInclude Include="Seats.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="color2d.frag" />
+    <None Include="color2d.vert" />
+    <None Include="model.frag" />
+    <None Include="model.vert" />
     <None Include="packages.config" />
+    <None Include="phong.frag" />
+    <None Include="phong.vert" />
+    <None Include="phong_tex.frag" />
+    <None Include="phong_tex.vert" />
     <None Include="rect.frag">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </None>
@@ -151,17 +169,42 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\ceiling.jpeg" />
+    <Image Include="..\..\..\..\..\Downloads\floor.jpeg" />
     <Image Include="..\..\..\..\..\gr\crvena.png" />
     <Image Include="..\..\..\..\..\gr\kursor.png">
       <DeploymentContent>false</DeploymentContent>
     </Image>
-    <Image Include="..\..\..\..\..\gr\me.png" />
     <Image Include="..\..\..\..\..\gr\plava.png" />
     <Image Include="..\..\..\..\..\gr\zuta.png" />
+    <Image Include="..\..\..\..\sg\f1.jpg" />
+    <Image Include="..\..\..\..\sg\f10.jpg" />
+    <Image Include="..\..\..\..\sg\f11.jpg" />
+    <Image Include="..\..\..\..\sg\f12.jpg" />
+    <Image Include="..\..\..\..\sg\f13.jpg" />
+    <Image Include="..\..\..\..\sg\f14.jpg" />
+    <Image Include="..\..\..\..\sg\f15.jpg" />
+    <Image Include="..\..\..\..\sg\f16.jpg" />
+    <Image Include="..\..\..\..\sg\f17.jpg" />
+    <Image Include="..\..\..\..\sg\f18.jpg" />
+    <Image Include="..\..\..\..\sg\f19.jpg" />
+    <Image Include="..\..\..\..\sg\f2.jpg" />
+    <Image Include="..\..\..\..\sg\f20.jpg" />
+    <Image Include="..\..\..\..\sg\f21.jpg" />
+    <Image Include="..\..\..\..\sg\f3.jpg" />
+    <Image Include="..\..\..\..\sg\f4.jpg" />
+    <Image Include="..\..\..\..\sg\f5.jpg" />
+    <Image Include="..\..\..\..\sg\f6.jpg" />
+    <Image Include="..\..\..\..\sg\f7.jpg" />
+    <Image Include="..\..\..\..\sg\f8.jpg" />
+    <Image Include="..\..\..\..\sg\f9.jpg" />
     <Image Include="..\..\gr\desno.png" />
     <Image Include="..\..\gr\levo.png" />
     <Image Include="..\..\gr\pravo.png" />
     <Image Include="..\..\gr\sedenje.png" />
+    <Image Include="res\me.png" />
+    <Image Include="res\scrr.jpg" />
+    <Image Include="res\wall.jpeg" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />
@@ -170,6 +213,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\glfw.3.4.0\build\native\glfw.targets" Condition="Exists('packages\glfw.3.4.0\build\native\glfw.targets')" />
     <Import Project="packages\glew-2.2.0.2.2.0.1\build\native\glew-2.2.0.targets" Condition="Exists('packages\glew-2.2.0.2.2.0.1\build\native\glew-2.2.0.targets')" />
+    <Import Project="packages\glm.1.0.3\build\native\glm.targets" Condition="Exists('packages\glm.1.0.3\build\native\glm.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -177,5 +221,6 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\glfw.3.4.0\build\native\glfw.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glfw.3.4.0\build\native\glfw.targets'))" />
     <Error Condition="!Exists('packages\glew-2.2.0.2.2.0.1\build\native\glew-2.2.0.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glew-2.2.0.2.2.0.1\build\native\glew-2.2.0.targets'))" />
+    <Error Condition="!Exists('packages\glm.1.0.3\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glm.1.0.3\build\native\glm.targets'))" />
   </Target>
 </Project>

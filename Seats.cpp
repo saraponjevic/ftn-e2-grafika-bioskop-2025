@@ -33,31 +33,32 @@ void initSeats()
 {
     seats.clear();
 
+    //SEAT_W i SEAT_H su osnovna širina i visina sedišta
     float baseW = SEAT_W;
     float baseH = SEAT_H;
 
-    float yStart = -0.75f;
+    float yStart = -0.75f;  //Početna Y pozicija donjeg reda sedišta.
 
     float maxScale = seatScaleForRow(0);
-    float rowSpacing = baseH * maxScale * 0.70f;
+    float rowSpacing = baseH * maxScale * 0.70f;   //razmak između redova po Y osi
 
     for (int r = 0; r < NUM_ROWS; r++)
     {
         float scale = seatScaleForRow(r);
-        float seatWRow = baseW * scale;
+        float seatWRow = baseW * scale;    
 
-        float stepX = seatWRow * 0.6f;
-        float totalWidth = (NUM_COLS - 1) * stepX;
-        float startX = -totalWidth / 2.0f;
+        float stepX = seatWRow * 0.6f;   //stepX = horizontalni razmak između sedišta
+        float totalWidth = (NUM_COLS - 1) * stepX;   //totalWidth = širina cele grupe stolica u tom redu.
+        float startX = -totalWidth / 2.0f;   //startX = x koordinata prvog sedišta u redu, tako da su sedišta centrirana oko x = 0
 
-        float y = yStart + r * rowSpacing;
+        float y = yStart + r * rowSpacing;   //Y koordinata za ceo red r.
 
-        for (int c = 0; c < NUM_COLS; c++)
+        for (int c = 0; c < NUM_COLS; c++)   //c = kolona (broj sedišta u redu)
         {
             Seat s;
-            s.x = startX + c * stepX;
-            s.y = y;
-            s.status = SeatStatus::Free;
+            s.x = startX + c * stepX;  //s.x = pozicija sedišta po X osi
+            s.y = y;   //s.y = ista za sva sedišta u redu.
+            s.status = SeatStatus::Free;   //status = Free → na početku su sva sedišta slobodna (plava
 
             seats.push_back(s);
         }
@@ -66,20 +67,22 @@ void initSeats()
 
 
 // klik na sedista
-void handleSeatClick(float ndcX, float ndcY)
+void handleSeatClick(float ndcX, float ndcY)   
 {
     for (int i = 0; i < (int)seats.size(); i++)
     {
-        Seat& s = seats[i];
+        Seat& s = seats[i];   
 
-        int row = i / NUM_COLS;
+        int row = i / NUM_COLS;  //Iz indeksa i izvlačiš red
         float scale = seatScaleForRow(row);
 
         float seatWidth = SEAT_W * scale;
         float seatHeight = SEAT_H * scale;
 
-        if (ndcX > s.x - seatWidth / 2 && ndcX < s.x + seatWidth / 2 &&
-            ndcY > s.y - seatHeight / 2 && ndcY < s.y + seatHeight / 2)
+
+        //Da li se klik nalazi unutar pravougaonika sedišta
+        if (ndcX > s.x - seatWidth / 2 && ndcX < s.x + seatWidth / 2 &&   
+            ndcY > s.y - seatHeight / 2 && ndcY < s.y + seatHeight / 2)   
         {
             if (s.status == SeatStatus::Free)
                 s.status = SeatStatus::Reserved;
@@ -98,16 +101,16 @@ void buySeats(int N)
     for (int r = 0; r < NUM_ROWS; r++)
 
     {
-        int count = 0;
-        int startCol = -1;
+        int count = 0;  //koliko si trenutno uzastopnih slobodnih sedišta
+        int startCol = -1;   //kolona gde je počela trenutna grupa slobodnih sedišta
 
-        for (int c = NUM_COLS - 1; c >= 0; c--)
+        for (int c = NUM_COLS - 1; c >= 0; c--)   //krećeš od desnog kraja reda
         {
-            Seat& s = seats[r * NUM_COLS + c];
+            Seat& s = seats[r * NUM_COLS + c];   
 
             if (s.status == SeatStatus::Free)
             {
-                if (count == 0) startCol = c;
+                if (count == 0) startCol = c;  
                 count++;
 
                 if (count == N)
@@ -118,9 +121,9 @@ void buySeats(int N)
                 }
             }
             else
-            {
-                count = 0;
-                startCol = -1;
+            {           //Ako sedište nije Free
+                count = 0;  //resetuješ count na 0
+                startCol = -1;  
             }
         }
     }

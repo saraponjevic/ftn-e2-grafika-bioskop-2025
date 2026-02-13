@@ -1,12 +1,12 @@
 #version 330 core
 
-layout(location = 0) in vec2 inPos;  
-layout(location = 1) in vec2 inTex;   
+layout(location = 0) in vec2 inPos;    
+layout(location = 1) in vec2 inTex;     
 
-out vec2 chTex;
+out vec2 chTex;    
 
-uniform vec2 uPos;      
-uniform vec2 uScale;   
+uniform vec2 uPos;      //gde ce se nacrtati
+uniform vec2 uScale;   //širina i visina
 
 void main()
 {
