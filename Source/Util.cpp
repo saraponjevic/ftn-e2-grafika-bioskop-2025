@@ -4,9 +4,13 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
-#define STB_IMAGE_IMPLEMENTATION
+#include <GL/glew.h>
+
+
 #include "../Header/stb_image.h"
+#include <vector>
 
 // Autor: Nedeljko Tesanovic
 // Opis: pomocne funkcije za zaustavljanje programa, ucitavanje sejdera, tekstura i kursora
@@ -144,7 +148,9 @@ unsigned int createShader(const char* vsSource, const char* fsSource)
     glGetProgramiv(program, GL_VALIDATE_STATUS, &success); //Slicno kao za sejdere
     if (success == GL_FALSE)
     {
-        glGetShaderInfoLog(program, 512, NULL, infoLog);
+        //glGetShaderInfoLog(program, 512, NULL, infoLog);
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
+
         std::cout << "Objedinjeni sejder ima gresku! Greska: \n";
         std::cout << infoLog << std::endl;
     }
@@ -158,7 +164,7 @@ unsigned int createShader(const char* vsSource, const char* fsSource)
     return program;
 }
 
-
+/*
 unsigned loadImageToTexture(const char* filePath) {
     int TextureWidth;
     int TextureHeight;
@@ -190,8 +196,7 @@ unsigned loadImageToTexture(const char* filePath) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 
-
-        glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, TextureWidth, TextureHeight, 0, InternalFormat, GL_UNSIGNED_BYTE, ImageData);
+       glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, TextureWidth, TextureHeight, 0, InternalFormat, GL_UNSIGNED_BYTE, ImageData);
         glBindTexture(GL_TEXTURE_2D, 0);
         // oslobadjanje memorije zauzete sa stbi_load posto vise nije potrebna
         stbi_image_free(ImageData);
@@ -203,7 +208,183 @@ unsigned loadImageToTexture(const char* filePath) {
         stbi_image_free(ImageData);
         return 0;
     }
+}*/
+
+
+
+unsigned loadImageToTexture(const char* filePath)
+{
+    // 1) ako je putanja prazna -> fallback 1x1
+    if (!filePath || filePath[0] == '\0') {
+        unsigned int tex = 0;
+        unsigned char px[4] = { 180,180,180,255 };
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return tex;
+    }
+
+    // ✅ zvanični flip (umesto stbi__vertical_flip)
+    stbi_set_flip_vertically_on_load(true);
+
+    int w = 0, h = 0, ch = 0;
+    unsigned char* data = stbi_load(filePath, &w, &h, &ch, 0);
+
+    // 2) ako nije ucitano -> fallback 1x1 (NE PUCA)
+    if (!data || w <= 0 || h <= 0) {
+        std::cout << "[loadImageToTexture] FAILED: " << filePath
+            << " reason=" << (data ? "bad size" : stbi_failure_reason())
+            << "\n";
+
+        unsigned int tex = 0;
+        unsigned char px[4] = { 180,180,180,255 };
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        if (data) stbi_image_free(data);
+        return tex;
+    }
+
+    GLenum format = GL_RGB;
+    if (ch == 1) format = GL_RED;
+    else if (ch == 2) format = GL_RG;
+    else if (ch == 3) format = GL_RGB;
+    else if (ch == 4) format = GL_RGBA;
+
+    unsigned int tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return tex;
 }
+
+
+
+/*
+unsigned loadImageToTexture(const char* filePath) {
+    stbi_set_flip_vertically_on_load(true); // ✅ zvanično
+
+    int w = 0, h = 0, ch = 0;
+    unsigned char* data = stbi_load(filePath, &w, &h, &ch, 0);
+
+    if (!data) {
+        std::cout << "Textura nije ucitana! Putanja texture: " << filePath << "\n";
+        // stbi_image_free(nullptr) je ok, ali nije ni potrebno
+        return 0;
+    }
+
+    GLenum format = GL_RGB;
+    switch (ch) {
+    case 1: format = GL_RED;  break;
+    case 2: format = GL_RG;   break;
+    case 3: format = GL_RGB;  break;
+    case 4: format = GL_RGBA; break;
+    default: format = GL_RGB; break;
+    }
+
+    unsigned int tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    // ✅ wrap za tiling (ti koristiš tileFloor, tileWall...) -> treba REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // ✅ filter + mipmap (manje “mutno/treperi” u daljini)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    stbi_image_free(data);
+    return tex;
+}*/
+
+
+/*unsigned loadImageToTexture(const char* filePath)
+{
+    if (!filePath || filePath[0] == '\0') {
+        // fallback: 1x1 bela
+        unsigned int tex = 0;
+        unsigned char white[4] = { 255,255,255,255 };
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return tex;
+    }
+
+    int w = 0, h = 0, ch = 0;
+
+    // ako koristiš flip u projektu:
+    stbi_set_flip_vertically_on_load(true);
+
+    unsigned char* data = stbi_load(filePath, &w, &h, &ch, 0);
+
+    if (!data || w <= 0 || h <= 0) {
+        std::cout << "[loadImageToTexture] FAILED: " << filePath
+            << "  reason=" << (data ? "bad size" : stbi_failure_reason())
+            << "\n";
+
+        // fallback: 1x1 siva (da ne bude baš bela)
+        unsigned int tex = 0;
+        unsigned char gray[4] = { 180,180,180,255 };
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gray);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return tex;
+    }
+
+    GLenum format = GL_RGB;
+    if (ch == 1) format = GL_RED;
+    else if (ch == 3) format = GL_RGB;
+    else if (ch == 4) format = GL_RGBA;
+
+    unsigned int tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // ✅ ovo je sad bezbedno jer data != nullptr
+    glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return tex;
+}*/
+
+
+
+
 
 
 GLFWcursor* loadImageToCursor(const char* filePath) {
@@ -290,6 +471,7 @@ GLFWcursor* loadImageToCursor(const char* filePath) {
 
 
 
+
 void drawRect(unsigned int shader, unsigned int VAO,
     float cx, float cy, float sx, float sy, Color col)
 {
@@ -317,6 +499,118 @@ void drawTexturedQuad(unsigned int shader, unsigned int VAO,
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);  
+}
+
+void createQuad3DVAO(unsigned int& vao, unsigned int& vbo) {
+    float v[] = {
+        // pos                // nor        // uv
+        -0.5f, 0.0f, -0.5f,   0,1,0,        0,0,
+         0.5f, 0.0f, -0.5f,   0,1,0,        1,0,
+         0.5f, 0.0f,  0.5f,   0,1,0,        1,1,
+
+         0.5f, 0.0f,  0.5f,   0,1,0,        1,1,
+        -0.5f, 0.0f,  0.5f,   0,1,0,        0,1,
+        -0.5f, 0.0f, -0.5f,   0,1,0,        0,0
+    };
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+
+    int stride = (3 + 3 + 2) * sizeof(float);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)((3 + 3) * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+}
+
+
+static std::string readTextFileSafe(const char* path)
+{
+    std::ifstream f(path, std::ios::in);
+    if (!f) {
+        std::cout << "NE MOGU OTVORITI: " << path << std::endl;
+        return "";
+    }
+    std::stringstream ss;
+    ss << f.rdbuf();
+    return ss.str();
+}
+
+
+
+
+static void printShaderLog(GLuint sh, const char* tag)
+{
+    GLint ok = 0;
+    glGetShaderiv(sh, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        GLint len = 0; glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
+        std::vector<GLchar> log(len + 1);
+        GLsizei written = 0;
+        glGetShaderInfoLog(sh, len, &written, log.data());
+        std::cout << "[SHADER COMPILE FAIL] " << tag << "\n" << log.data() << std::endl;
+
+    }
+}
+
+static void printProgramLog(GLuint p)
+{
+    GLint ok = 0;
+    glGetProgramiv(p, GL_LINK_STATUS, &ok);
+    if (!ok) {
+        GLint len = 0;
+        glGetProgramiv(p, GL_INFO_LOG_LENGTH, &len);
+
+        std::vector<GLchar> log(len + 1);
+        GLsizei written = 0;
+        glGetProgramInfoLog(p, len, &written, log.data());
+
+        std::cout << "[PROGRAM LINK FAIL]\n" << log.data() << std::endl;
+    }
+}
+
+
+
+
+unsigned int createShaderSafe(const char* vsPath, const char* fsPath)
+{
+    std::string vsSrc = readTextFileSafe(vsPath);
+    std::string fsSrc = readTextFileSafe(fsPath);
+    if (vsSrc.empty() || fsSrc.empty()) return 0;
+
+    const char* vsrc = vsSrc.c_str();
+    const char* fsrc = fsSrc.c_str();
+
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vsrc, nullptr);
+    glCompileShader(vs);
+    printShaderLog(vs, vsPath);
+
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fsrc, nullptr);
+    glCompileShader(fs);
+    printShaderLog(fs, fsPath);
+
+    GLuint prog = glCreateProgram();
+    glAttachShader(prog, vs);
+    glAttachShader(prog, fs);
+    glLinkProgram(prog);
+    printProgramLog(prog);
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    return prog;
 }
 
 /*GLFWcursor* loadImageToCursor(const char* filePath) {

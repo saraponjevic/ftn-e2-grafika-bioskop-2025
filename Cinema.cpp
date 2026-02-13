@@ -29,7 +29,7 @@ void resetScene()
 
 
 // tamnosivi pravougaonik preko ekrana + otvaranje i zatvaranje vrata -klizna vrata
-void updateOverlayAndDoors(double now)
+void updateOverlayAndDoorss(double now)
 {
     
    
@@ -61,7 +61,9 @@ void updateOverlayAndDoors(double now)
 }
 
 
-// boje platna + kad je kraj filma izlazak ljudi i platno opet belo
+// boje platna + kad je kraj filma izlazak ljudi i platno opet belož
+
+/*
 void updateFilm(double now)
 {
     if (!filmStarted || filmFinished)
@@ -106,7 +108,7 @@ void updateFilm(double now)
         screenColor = Color{ r, g, b, 1.0f };  
     }
     filmFrameCount++;
-}
+}*/
 
 
 // rect.frag i rect.vert
